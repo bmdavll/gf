@@ -107,7 +107,7 @@ Examples:
 }
 errorUsage() {
     printUsage >&2
-    [ $# -gt 0 ] && echo >&2 $'\n'"$PROG: $@"
+    [ $# -gt 0 ] && echo >&2 "$PROG: $@"
     exit 2
 }
 # }}}
@@ -121,23 +121,28 @@ fi
 PATOPT=-e
 unset PATTERN
 
-while getopts 'h?e:f:' option
+while getopts ':he:f:' option
 do
     case "$option" in
-    h)      helpText
+    h)  helpText
+        exit 0
+        ;;
+    e)  PATOPT=-e
+        PATTERN="$OPTARG"
+        ;;
+    f)  PATOPT=-f
+        PATTERN="$OPTARG"
+        ;;
+    :)  errorUsage "Option $OPTARG requires an argument"
+        ;;
+    ?)  case "$OPTARG" in
+        \?) printUsage
             exit 0
             ;;
-    \?)     printUsage
-            exit 0
+        *)  errorUsage "Illegal option" "$OPTARG"
             ;;
-    e)      PATOPT=-e
-            PATTERN="$OPTARG"
-            ;;
-    f)      PATOPT=-f
-            PATTERN="$OPTARG"
-            ;;
-    ?)      errorUsage
-            ;;
+        esac
+        ;;
     esac
 done
 shift $((OPTIND - 1))
