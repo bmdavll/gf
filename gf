@@ -169,30 +169,34 @@ if [ ! "${PATTERN+set}" ]; then
 fi
 
 # escape sequence conversion for \s, \d, \S, and \D {{{
-if type _sd &>/dev/null; then
-    PATTERN=$(_sd "$PATTERN")
-else
+if [[ "$PROG" != p* ]]; then
+    if type _sd &>/dev/null; then
+        PATTERN=$(_sd "$PATTERN")
+    else
+
 ESCAPE='^(([^[\\]|\\.|\[((\^[^[]|[^^[]|\^?(\[|\[:[a-z]*|\[:[a-z]*:)*(\[:
 [a-z]*:\]|\[:[a-z]*:[^[\]]|\[:[a-z]*[^a-z:[\]]|\[[^:[\]]))([^[\]]|(\[|\[
 :[a-z]*|\[:[a-z]*:)*(\[:[a-z]*:\]|\[:[a-z]*:[^[\]]|\[:[a-z]*[^a-z:[\]]|\
 [[^:[\]]))*((\[|\[:[a-z]*|\[:[a-z]*:)*(\[|\[:[a-z]*))?|\^?((\[|\[:[a-z]*
 |\[:[a-z]*:)*(\[|\[:[a-z]*)))\])*)\\[sSdD]'
 ESCAPE="${ESCAPE//$'\n'/}"
-PATTERN=$(echo "$PATTERN" | gawk '{
-    while (match($0, /'"$ESCAPE"'/)) {
-        char = substr($0, RSTART+RLENGTH-1, 1);
-        if (char == "s")
-            class = "[[:space:]]";
-        else if (char == "S")
-            class = "[^[:space:]]";
-        else if (char == "d")
-            class = "[[:digit:]]";
-        else if (char == "D")
-            class = "[^[:digit:]]";
-        $0 = gensub(/'"$ESCAPE"'/, "\\1"class, 1);
-    }
-    print;
-}')
+
+        PATTERN=$(echo "$PATTERN" | gawk '{
+            while (match($0, /'"$ESCAPE"'/)) {
+                char = substr($0, RSTART+RLENGTH-1, 1);
+                if (char == "s")
+                    class = "[[:space:]]";
+                else if (char == "S")
+                    class = "[^[:space:]]";
+                else if (char == "d")
+                    class = "[[:digit:]]";
+                else if (char == "D")
+                    class = "[^[:digit:]]";
+                $0 = gensub(/'"$ESCAPE"'/, "\\1"class, 1);
+            }
+            print;
+        }')
+    fi
 fi
 # }}}
 
